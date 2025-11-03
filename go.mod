@@ -5,7 +5,8 @@ go 1.24.4
 require (
 	github.com/gorilla/sessions v1.4.0
 	github.com/joho/godotenv v1.5.1
-	github.com/kinde-oss/kinde-go v0.0.0-00010101000000-000000000000
+	github.com/kinde-oss/kinde-go v0.1.8
+	golang.org/x/oauth2 v0.32.0
 )
 
 require (
@@ -36,7 +37,6 @@ require (
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/mod v0.29.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
@@ -44,5 +44,3 @@ require (
 	golang.org/x/tools v0.38.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
-
-replace github.com/kinde-oss/kinde-go => /Users/brandtkruger/Projects/kinde-go
