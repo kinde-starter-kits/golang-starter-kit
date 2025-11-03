@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <h1>🚀 Kinde Golang</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/dashboard" class="active">Dashboard</a>
+                    <a href="/profile">Profile</a>
+                    <a href="/logout" class="btn btn-secondary">Logout</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <h1>Dashboard</h1>
+                <p class="subtitle">Welcome to your personal dashboard</p>
+
+                <div class="user-info-card">
+                    <div class="user-avatar">
+                        {{ if .user_picture }}
+                            <img src="{{ .user_picture }}" alt="Profile picture">
+                        {{ else }}
+                            <div class="avatar-placeholder">{{ index .user_name 0 }}</div>
+                        {{ end }}
+                    </div>
+                    <div class="user-details">
+                        <h2>{{ .user_name }}</h2>
+                        <p>{{ .user_email }}</p>
+                        <p class="user-id">ID: {{ .user_id }}</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>👤 Profile</h3>
+                        <p>View and manage your profile information</p>
+                        <a href="/profile" class="btn btn-primary">View Profile</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>🔒 Security</h3>
+                        <p>Your session is secure with OAuth2 + PKCE</p>
+                        <span class="badge">Protected</span>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>📊 API Access</h3>
+                        <p>Access user data via API endpoints</p>
+                        <button onclick="fetchUserData()" class="btn btn-secondary">Test API</button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>📝 Documentation</h3>
+                        <p>Learn how to customize this starter kit</p>
+                        <a href="https://docs.kinde.com" target="_blank" class="btn btn-secondary">Read Docs</a>
+                    </div>
+                </div>
+
+                <div id="api-result" class="api-result" style="display: none;">
+                    <h3>API Response:</h3>
+                    <pre id="api-data"></pre>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using <a href="https://kinde.com" target="_blank">Kinde</a> and <a href="https://golang.org" target="_blank">Go</a></p>
+        </footer>
+    </div>
+
+    <script>
+        async function fetchUserData() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                document.getElementById('api-data').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('api-result').style.display = 'block';
+            } catch (error) {
+                document.getElementById('api-data').textContent = 'Error: ' + error.message;
+                document.getElementById('api-result').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+

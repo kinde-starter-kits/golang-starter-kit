@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <h1>🚀 Kinde Golang</h1>
+                </div>
+                <div class="nav-links">
+                    {{ if .authenticated }}
+                        <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+                        <a href="/logout" class="btn btn-secondary">Logout</a>
+                    {{ else }}
+                        <a href="/login" class="btn btn-primary">Sign In</a>
+                        <a href="/register" class="btn btn-secondary">Sign Up</a>
+                    {{ end }}
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="hero">
+                <h1>Welcome to Kinde Golang Starter Kit</h1>
+                <p class="subtitle">A modern authentication starter kit built with Go and Kinde</p>
+                
+                {{ if .authenticated }}
+                    <div class="welcome-message">
+                        <h2>👋 Hello, {{ .user }}!</h2>
+                        <p>You're successfully authenticated.</p>
+                        <a href="/dashboard" class="btn btn-primary btn-large">Go to Dashboard</a>
+                    </div>
+                {{ else }}
+                    <div class="cta-buttons">
+                        <a href="/login" class="btn btn-primary btn-large">Get Started</a>
+                        <a href="/register" class="btn btn-secondary btn-large">Create Account</a>
+                    </div>
+                {{ end }}
+            </div>
+
+            <div class="features">
+                <h2>Features</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔐</div>
+                        <h3>Secure Authentication</h3>
+                        <p>OAuth2 with PKCE for secure user authentication</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Fast & Lightweight</h3>
+                        <p>Built with Gin framework for high performance</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎨</div>
+                        <h3>Modern UI</h3>
+                        <p>Clean and responsive design out of the box</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h3>Easy to Customize</h3>
+                        <p>Well-structured code ready for your needs</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using <a href="https://kinde.com" target="_blank">Kinde</a> and <a href="https://golang.org" target="_blank">Go</a></p>
+        </footer>
+    </div>
+</body>
+</html>
+
+
+

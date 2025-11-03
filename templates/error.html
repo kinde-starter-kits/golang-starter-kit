@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <h1>🚀 Kinde Golang</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="error-page">
+                <div class="error-icon">⚠️</div>
+                <h1>Oops! Something went wrong</h1>
+                <div class="error-message">
+                    <p>{{ .error }}</p>
+                </div>
+                <div class="error-actions">
+                    <a href="/" class="btn btn-primary">Go Home</a>
+                    <a href="/login" class="btn btn-secondary">Try Login Again</a>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using <a href="https://kinde.com" target="_blank">Kinde</a> and <a href="https://golang.org" target="_blank">Go</a></p>
+        </footer>
+    </div>
+</body>
+</html>
+
+
+

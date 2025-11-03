@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <div class="logo">
+                    <h1>🚀 Kinde Golang</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/dashboard">Dashboard</a>
+                    <a href="/profile" class="active">Profile</a>
+                    <a href="/logout" class="btn btn-secondary">Logout</a>
+                </div>
+            </nav>
+        </header>
+
+        <main>
+            <div class="profile">
+                <h1>Your Profile</h1>
+                <p class="subtitle">Manage your account information</p>
+
+                <div class="profile-container">
+                    <div class="profile-avatar-section">
+                        {{ if .user_picture }}
+                            <img src="{{ .user_picture }}" alt="Profile picture" class="profile-avatar-large">
+                        {{ else }}
+                            <div class="avatar-placeholder-large">{{ index .user_name 0 }}</div>
+                        {{ end }}
+                    </div>
+
+                    <div class="profile-info-section">
+                        <div class="info-group">
+                            <label>Full Name</label>
+                            <div class="info-value">{{ .user_name }}</div>
+                        </div>
+
+                        <div class="info-group">
+                            <label>Email Address</label>
+                            <div class="info-value">{{ .user_email }}</div>
+                        </div>
+
+                        <div class="info-group">
+                            <label>User ID</label>
+                            <div class="info-value">{{ .user_id }}</div>
+                        </div>
+
+                        <div class="info-group">
+                            <label>Authentication Status</label>
+                            <div class="info-value">
+                                <span class="badge badge-success">✓ Authenticated</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions">
+                            <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+                            <a href="https://kinde.com" target="_blank" class="btn btn-secondary">Manage Account</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-note">
+                    <p><strong>Note:</strong> This is a starter kit demonstration. To manage your full profile, visit your Kinde dashboard or implement custom profile management in your application.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with ❤️ using <a href="https://kinde.com" target="_blank">Kinde</a> and <a href="https://golang.org" target="_blank">Go</a></p>
+        </footer>
+    </div>
+</body>
+</html>
+
+
+
