@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setup Required - Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <style>
+      .setup-container {
+        max-width: 800px;
+        margin: 3rem auto;
+        padding: 2rem;
+      }
+      .setup-card {
+        background: white;
+        border-radius: 0.75rem;
+        padding: 3rem;
+        border: 1px solid #e8e8e8;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .setup-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .setup-header h1 {
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .setup-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+      .step {
+        background: #f7f7f7;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #000000;
+      }
+      .step h3 {
+        color: #000000;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+      .step ol {
+        margin-left: 1.5rem;
+        line-height: 1.8;
+      }
+      .code-block {
+        background: #1a1a1a;
+        color: #00d9a1;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas,
+          'Courier New', monospace;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        border: 1px solid #2a2a2a;
+      }
+      .warning-box {
+        background: #fef3c7;
+        border: 2px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1.5rem 0;
+      }
+      .success-box {
+        background: #d1fae5;
+        border: 2px solid #10b981;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin: 1.5rem 0;
+      }
+      .btn-refresh {
+        display: inline-block;
+        padding: 0.875rem 2rem;
+        background: #000000;
+        color: white;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        text-align: center;
+        margin-top: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .btn-refresh:hover {
+        background: #1a1a1a;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="setup-container">
+      <div class="setup-card">
+        <div class="setup-header">
+          <div class="setup-icon">⚙️</div>
+          <h1>Configuration Required</h1>
+          <p class="subtitle">Let's get your Kinde credentials set up!</p>
+        </div>
+
+        <div class="warning-box">
+          <strong>⚠️ Important:</strong> The application requires valid Kinde
+          credentials to run. This should only take 2-3 minutes to set up!
+        </div>
+
+        <div class="step">
+          <h3>Step 1: Get Your Kinde Credentials</h3>
+          <ol>
+            <li>
+              Go to
+              <a href="https://app.kinde.com" target="_blank"
+                ><strong>app.kinde.com</strong></a
+              >
+              and sign in
+            </li>
+            <li>
+              Navigate to <strong>Settings</strong> →
+              <strong>Applications</strong>
+            </li>
+            <li>Select or create an application</li>
+            <li>
+              Copy these values:
+              <ul>
+                <li>
+                  <strong>Domain</strong> (e.g., https://yourbusiness.kinde.com)
+                </li>
+                <li><strong>Client ID</strong></li>
+                <li><strong>Client Secret</strong> (click "Show" to reveal)</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="step">
+          <h3>Step 2: Configure Callback URLs in Kinde</h3>
+          <p>In your Kinde application settings, add these URLs:</p>
+          <ul>
+            <li>
+              <strong>Allowed callback URLs:</strong>
+              <code>http://localhost:3000/callback</code>
+            </li>
+            <li>
+              <strong>Allowed logout redirect URLs:</strong>
+              <code>http://localhost:3000</code>
+            </li>
+          </ul>
+          <p>Click <strong>Save</strong></p>
+        </div>
+
+        <div class="step">
+          <h3>Step 3: Edit Your .env File</h3>
+          <p>Open this file in your text editor:</p>
+          <div class="code-block">.env</div>
+
+          <p>Update it with your Kinde credentials:</p>
+          <div class="code-block">
+            KINDE_DOMAIN=https://yourbusiness.kinde.com
+            KINDE_CLIENT_ID=your_client_id_here
+            KINDE_CLIENT_SECRET=your_client_secret_here
+            KINDE_REDIRECT_URI=http://localhost:3000/callback
+            KINDE_LOGOUT_REDIRECT_URI=http://localhost:3000 PORT=3000
+            SESSION_SECRET=any-random-long-string-here
+          </div>
+
+          <div class="warning-box">
+            <strong>Important:</strong> Replace
+            <code>your_client_id_here</code>,
+            <code>your_client_secret_here</code>, and
+            <code>yourbusiness</code> with your actual values!
+          </div>
+        </div>
+
+        <div class="step">
+          <h3>Step 4: Restart the Server</h3>
+          <p>After saving your .env file:</p>
+          <ol>
+            <li>Stop the server (press <kbd>Ctrl+C</kbd> in the terminal)</li>
+            <li>Start it again:</li>
+          </ol>
+          <div class="code-block">go run main.go</div>
+        </div>
+
+        <div class="success-box">
+          <strong>✅ After Configuration:</strong> Refresh this page and you'll
+          see the beautiful starter kit home page with working authentication!
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem">
+          <a
+            href="/"
+            class="btn-refresh"
+            onclick="location.reload(); return false;"
+          >
+            🔄 I've configured it - Refresh
+          </a>
+        </div>
+
+        <hr
+          style="margin: 2rem 0; border: none; border-top: 1px solid #e5e7eb"
+        />
+
+        <div style="text-align: center">
+          <h3>Need Help?</h3>
+          <p>
+            <a href="https://docs.kinde.com" target="_blank"
+              >📚 Kinde Documentation</a
+            >
+            •
+            <a
+              href="https://github.com/kinde-starter-kits/golang-starter-kit"
+              target="_blank"
+              >💻 GitHub Repo</a
+            >
+            •
+            <a href="https://kinde.com" target="_blank">🏠 Kinde.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

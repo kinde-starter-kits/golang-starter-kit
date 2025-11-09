@@ -1,0 +1,317 @@
+package handlers
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/kinde-oss/kinde-go/oauth2/authorization_code"
+	"github.com/kinde-starter-kits/golang-starter-kit/config"
+	"github.com/kinde-starter-kits/golang-starter-kit/session"
+)
+
+// Handler holds the application handlers
+type Handler struct {
+	config     *Config
+	kindeOAuth *authorization_code.AuthorizationCodeFlow
+	templates  *template.Template
+}
+
+// NewHandler creates a new handler instance
+func NewHandler(cfg *config.Config) *Handler {
+	// Load all templates
+	templates := template.Must(template.ParseGlob("templates/*"))
+
+	// Initialize Kinde OAuth2 Authorization Code Flow
+	kindeOAuth, err := authorization_code.NewAuthorizationCodeFlow(
+		cfg.KindeDomain,
+		cfg.KindeClientID,
+		cfg.KindeClientSecret,
+		cfg.RedirectURI,
+		authorization_code.WithScopes("openid", "profile", "email", "offline"),
+	)
+	if err != nil {
+		log.Fatalf("Failed to initialize Kinde OAuth: %v", err)
+	}
+
+	return &Handler{
+		config: &Config{
+			KindeDomain:       cfg.KindeDomain,
+			KindeClientID:     cfg.KindeClientID,
+			KindeClientSecret: cfg.KindeClientSecret,
+			RedirectURI:       cfg.RedirectURI,
+			LogoutRedirectURI: cfg.LogoutRedirectURI,
+		},
+		kindeOAuth: kindeOAuth,
+		templates:  templates,
+	}
+}
+
+// Config is a local config structure for handlers
+type Config struct {
+	KindeDomain       string
+	KindeClientID     string
+	KindeClientSecret string
+	RedirectURI       string
+	LogoutRedirectURI string
+}
+
+// Home renders the home page
+func (h *Handler) Home(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+	}
+
+	userID := sess.Values["user_id"]
+
+	data := map[string]interface{}{
+		"authenticated": userID != nil,
+		"user":          sess.Values["user_email"],
+	}
+
+	if err := h.templates.ExecuteTemplate(w, "home.html", data); err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// Login initiates the OAuth2 login flow
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		h.renderError(w, "Failed to initiate login")
+		return
+	}
+
+	// Get authorization URL from Kinde SDK (handles state and PKCE automatically)
+	authURL, state, codeVerifier, err := h.kindeOAuth.GetAuthorizationURL(context.Background())
+	if err != nil {
+		log.Printf("Error getting authorization URL: %v", err)
+		h.renderError(w, "Failed to initiate login")
+		return
+	}
+
+	// Store state and code verifier in session
+	sess.Values["oauth_state"] = state
+	sess.Values["code_verifier"] = codeVerifier
+
+	if err := sess.Save(r, w); err != nil {
+		log.Printf("Error saving session: %v", err)
+		h.renderError(w, "Failed to initiate login")
+		return
+	}
+
+	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
+}
+
+// Register initiates the OAuth2 registration flow
+func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		h.renderError(w, "Failed to initiate registration")
+		return
+	}
+
+	// Get authorization URL with registration screen hint
+	authURL, state, codeVerifier, err := h.kindeOAuth.GetAuthorizationURL(
+		context.Background(),
+		authorization_code.WithAdditionalParameters(map[string]string{
+			"screen_hint": "registration",
+		}),
+	)
+	if err != nil {
+		log.Printf("Error getting authorization URL: %v", err)
+		h.renderError(w, "Failed to initiate registration")
+		return
+	}
+
+	// Store state and code verifier in session
+	sess.Values["oauth_state"] = state
+	sess.Values["code_verifier"] = codeVerifier
+
+	if err := sess.Save(r, w); err != nil {
+		log.Printf("Error saving session: %v", err)
+		h.renderError(w, "Failed to initiate registration")
+		return
+	}
+
+	http.Redirect(w, r, authURL, http.StatusTemporaryRedirect)
+}
+
+// Callback handles the OAuth2 callback
+func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		h.renderError(w, "Session error")
+		return
+	}
+
+	// Get saved state and code verifier from session
+	savedState, ok := sess.Values["oauth_state"].(string)
+	if !ok {
+		h.renderError(w, "State not found in session")
+		return
+	}
+
+	codeVerifier, ok := sess.Values["code_verifier"].(string)
+	if !ok {
+		h.renderError(w, "Code verifier not found in session")
+		return
+	}
+
+	// Exchange authorization code for token using Kinde SDK
+	token, err := h.kindeOAuth.GetToken(
+		context.Background(),
+		r.URL.Query().Get("code"),
+		savedState,
+		r.URL.Query().Get("state"),
+		codeVerifier,
+	)
+	if err != nil {
+		log.Printf("Token exchange error: %v", err)
+		h.renderError(w, fmt.Sprintf("Failed to exchange token: %v", err))
+		return
+	}
+
+	// Get user profile from token
+	userProfile, err := h.kindeOAuth.GetUserProfile(context.Background(), token)
+	if err != nil {
+		log.Printf("Failed to get user profile: %v", err)
+		h.renderError(w, fmt.Sprintf("Failed to get user profile: %v", err))
+		return
+	}
+
+	// Store only essential user information in session (not the large tokens)
+	// Note: Tokens are too large for cookie-based sessions (4KB limit)
+	// If you need tokens, consider using server-side session storage (Redis, DB, etc.)
+	sess.Values["user_id"] = userProfile.Sub
+	sess.Values["user_email"] = userProfile.Email
+	sess.Values["user_name"] = userProfile.GivenName
+	sess.Values["user_picture"] = userProfile.Picture
+
+	// Clear OAuth state and code verifier
+	delete(sess.Values, "oauth_state")
+	delete(sess.Values, "code_verifier")
+
+	if err := sess.Save(r, w); err != nil {
+		log.Printf("Error saving session: %v", err)
+		h.renderError(w, "Failed to save session")
+		return
+	}
+
+	http.Redirect(w, r, "/dashboard", http.StatusTemporaryRedirect)
+}
+
+// Logout handles user logout
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+	}
+
+	// Clear session
+	sess.Options.MaxAge = -1
+	if err := sess.Save(r, w); err != nil {
+		log.Printf("Error clearing session: %v", err)
+	}
+
+	// Redirect to Kinde logout endpoint
+	logoutURL := fmt.Sprintf("%s/logout?redirect=%s", h.config.KindeDomain, h.config.LogoutRedirectURI)
+	http.Redirect(w, r, logoutURL, http.StatusTemporaryRedirect)
+}
+
+// Dashboard renders the dashboard page (protected)
+func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+	}
+
+	data := map[string]interface{}{
+		"user_id":      sess.Values["user_id"],
+		"user_name":    sess.Values["user_name"],
+		"user_email":   sess.Values["user_email"],
+		"user_picture": sess.Values["user_picture"],
+	}
+
+	if err := h.templates.ExecuteTemplate(w, "dashboard.html", data); err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// Profile renders the profile page (protected)
+func (h *Handler) Profile(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+	}
+
+	data := map[string]interface{}{
+		"user_id":      sess.Values["user_id"],
+		"user_name":    sess.Values["user_name"],
+		"user_email":   sess.Values["user_email"],
+		"user_picture": sess.Values["user_picture"],
+	}
+
+	if err := h.templates.ExecuteTemplate(w, "profile.html", data); err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// GetUser returns user information as JSON (protected)
+func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
+	sess, err := session.Get(r)
+	if err != nil {
+		log.Printf("Error getting session: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"id":      sess.Values["user_id"],
+		"name":    sess.Values["user_name"],
+		"email":   sess.Values["user_email"],
+		"picture": sess.Values["user_picture"],
+	})
+}
+
+// SetupPage renders the setup instructions page
+func (h *Handler) SetupPage(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	data := map[string]interface{}{
+		"env_file":       ".env",
+		"current_domain": cfg.KindeDomain,
+	}
+
+	if err := h.templates.ExecuteTemplate(w, "setup.html", data); err != nil {
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+// Helper functions
+
+func (h *Handler) renderError(w http.ResponseWriter, errMsg string) {
+	data := map[string]interface{}{
+		"error": errMsg,
+	}
+	w.WriteHeader(http.StatusInternalServerError)
+	if err := h.templates.ExecuteTemplate(w, "error.html", data); err != nil {
+		log.Printf("Error executing error template: %v", err)
+		http.Error(w, errMsg, http.StatusInternalServerError)
+	}
+}
+
+// Helper functions removed - now handled by Kinde SDK

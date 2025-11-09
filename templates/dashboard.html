@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Kinde Golang Starter Kit</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="nav container">
+        <h1 class="text-display-3">KindeAuth</h1>
+        <div class="profile-blob">
+          <div class="avatar">{{ .user_initials }}</div>
+          <div>
+            <p class="text-heading-2">{{ .user_name }}</p>
+            <a class="text-subtle" href="/logout">Sign out</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="container">
+        <div class="card start-hero">
+          <p class="text-body-2 start-hero-intro">Woohoo!</p>
+          <p class="text-display-2">
+            Your authentication is all sorted.<br />
+            Build the important stuff.
+          </p>
+        </div>
+        <section class="next-steps-section">
+          <h2 class="text-heading-1">Next steps for you</h2>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <strong class="text-heading-2">KindeAuth</strong>
+        <p class="footer-tagline text-body-3">
+          Visit our <a class="link" href="https://kinde.com/docs" target="_blank">help center</a>
+        </p>
+        <small class="text-subtle">© 2024 KindeAuth, Inc. All rights reserved</small>
+      </div>
+    </footer>
+  </body>
+</html>
