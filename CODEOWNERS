@@ -1,1 +1,5 @@
 * @kinde-starter-kits/giants-kinde
+go.mod @kinde-starter-kits/sdk-engineers
+**/go.mod @kinde-starter-kits/sdk-engineers
+go.sum @kinde-starter-kits/sdk-engineers
+**/go.sum @kinde-starter-kits/sdk-engineers
